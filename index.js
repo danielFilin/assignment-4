@@ -1,136 +1,193 @@
 let color = "";
 let canvas = document.querySelector(".canvas");
+let body = document.querySelector("body");
 let spray = document.querySelector(".spray");
 let spraySingle = document.querySelector(".spray-single");
-let blue = document.querySelector(".blue");
-let green = document.querySelector(".green");
-let yellow = document.querySelector(".yellow");
-let red = document.querySelector(".red");
-let purple = document.querySelector(".purple");
 let eraser = document.querySelector(".eraser");
 let line = document.querySelector(".line");
+let parent = document.querySelector(".parent");
+let colorsHome = document.querySelector(".colors-column");
+let pointSize = document.querySelector(".my-pointer-selector");
+let zIndex = 0;
+let lineActive = false;
+let sprayActive = false;
+let width = 20;
+let height = 20;
+let lineWidth = 2;
 
 
-//simple points construction
+// Create the colors dynamically. 
+
+let myColors = ['blue', 'green', 'yellow', 'red', 'purple', 'pink', 'orange', 'black'];
+let pictures = ["https://www.onlygfx.com/wp-content/uploads/2018/01/blue-paint-brush-stroke-12.png", 'https://previews.123rf.com/images/kubais/kubais1309/kubais130900520/22245493-green-paint-splash-isolated-on-white-background.jpg', 'https://st2.depositphotos.com/4067179/11002/i/950/depositphotos_110020396-stock-photo-splash-of-yellow-paint-isolated.jpg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS97g1ToFLpngq36J24wNm1fL98spzMFxrEyInR4K1TdT1MSAJd', 'https://ak7.picdn.net/shutterstock/videos/2230837/thumb/2.jpg', 'https://www.pngkit.com/png/detail/0-5760_clipart-download-splatter-texture-diyismybae-on-deviantart-paint.png', 'https://www.seekpng.com/png/detail/21-215129_brush-strokes-orange-paint-brush-png.png', 'https://banner2.kisspng.com/20180330/gse/kisspng-painting-deviantart-drawing-white-splash-5abe782fe68411.1197398115224320479442.jpg']
+
+for (let i = 0; i < myColors.length; i++) {
+    let el = document.createElement('div');
+    el.classList.add('allColors');
+    el.style.backgroundImage = `url(${pictures[i]})`
+    colorsHome.appendChild(el);
+    el.addEventListener('click', () => {
+        color = myColors[i];
+    })
+}
+
+pointSize.addEventListener("click", () => {
+    for (let i = 0; i < pointSize.children.length; i++) {
+        if (pointSize.children[i].selected) {
+            width = pointSize.children[i].value;
+            height = pointSize.children[i].value;
+        }
+    }
+})
+
+let lineSize = document.querySelector(".my-line-selector");
+
+lineSize.addEventListener("click", () => {
+    for (let i = 0; i < lineSize.children.length; i++) {
+        if (lineSize.children[i].selected) {
+            lineWidth = lineSize.children[i].value;
+        }
+    }
+})
+
+var mouseDown = false;
+body.addEventListener('mousedown', () => {
+    mouseDown = true;
+})
+
+body.addEventListener('mouseup', () => {
+    mouseDown = false;
+})
 
 sprayMe = (kind) => {
     canvas.addEventListener(kind, (e) => {
-    
-    
-        let dot = document.createElement("span");
-        let x = e.clientX - 156;
-        let y = e.clientY;
-        //let x = e.offsetX;
-        //let y = e.offsetY;
-        dot.style.backgroundColor = color;
-        dot.style.top = -10+y+"px";
-        dot.style.left = -10+x+"px"; 
-        dot.style.position = "absolute";
-        dot.style.height = "20px";
-        dot.style.width = "20px";
-        dot.style.borderRadius = "100%";
-        canvas.appendChild(dot);
+        if (kind === "mousemove") {
+            if (mouseDown)
+                startWork(e);
+        } else {
+            startWork(e);
+        }
     })
 }
 
-
-let lineCoordinates = [];
-
-
-
-drawLine = (x1, y1, x2, y2) => {
-    let line = document.createElement("div");
-
-    let distance = Math.sqrt( ((x1-x2)*(x1-x2)) + ((y1-y2)*(y1-y2)));
-    //Middle point
-    let xMiddle = (x1+x2)/2;
-    let yMiddle = (y1+y2)/2;
-
-    //salope of the line
-    let slopeInRadian = Math.atan2(y1-y2, x1-x2);
-    slopeInDegrees = (slopeInRadian * 180) / Math.PI;
-    //css implementation
-    line.style.width = distance+"px";
-    line.style.position = "absolute";
-    line.style.height = 2+"px";
-    line.style.top = yMiddle+"px";
-    line.style.left = (xMiddle - (distance/2))+"px";
-    line.style.transform = "rotate("+slopeInDegrees+"deg)";
-    line.style.backgroundColor = "black";
-    canvas.appendChild(line);
-    console.log(line);
+startWork = (e) => {
+    if (!lineActive) {
+        zIndex++;
+        let numX = e.clientX + e.movementX;
+        let numY = e.clientY + e.movementY;
+        let dot = document.createElement("div");
+        dot.style.backgroundColor = color;
+        dot.style.zIndex = zIndex;
+        dot.classList.add("painter");
+        dot.style.top = -10 + numY - canvas.offsetTop + "px";
+        dot.style.left = -10 + numX - canvas.offsetLeft + "px";
+        dot.style.position = "absolute";
+        dot.style.height = width + "px";
+        dot.style.width = height + "px";
+        dot.style.borderRadius = "100%";
+        canvas.appendChild(dot);
+    }
 }
 
-// drawLine = (dots) => {
+let lineCoordinates = [];
+drawLine = (x1, y1, x2, y2) => {
 
-//     let line = document.createElement("div");
-//     line.style.display = "inline-block";
-//     line.style.position = "relative";
-//     console.log(dots[0].x);
-//     line.style.height = dots[1].x - dots[0].x+"px";
-//     line.style.width = "5px";
-//     line.style.backgroundColor = "red";
-//     line.style.marginTop = dots[0].x + "px"; 
-//     line.style.marginLeft = dots[0].y + "px";
-//     rect = line.getBoundingClientRect(); 
-//     console.log(rect.top, rect.right, rect.bottom, rect.left);
-//     console.log(line);
-//     canvas.appendChild(line);
+    if (lineActive) {
+        let line = document.createElement("span");
 
-    
-// }
+        let distance = Math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
+        //Middle point
+        let xMiddle = (x1 + x2) / 2;
+        let yMiddle = (y1 + y2) / 2;
 
-blue.addEventListener("click", () => {
-    color = "blue";
-})
-green.addEventListener("click", () => {
-    color = "green";
-})
-yellow.addEventListener("click", () => {
-    color = "yellow";
-})
-red.addEventListener("click", () => {
-    color = "red";
-})
-purple.addEventListener("click", () => {
-    color = "purple";
-})
+        //salope of the line
+        let slopeInRadian = Math.atan2(y1 - y2, x1 - x2);
+        slopeInDegrees = (slopeInRadian * 180) / Math.PI;
+        //css implementation
+        line.style.width = distance + "px";
+        line.style.position = "absolute";
+        line.style.height = lineWidth + "px";
+        line.style.top = yMiddle + "px";
+        line.style.left = (xMiddle - (distance / 2)) + "px";
+        line.style.transform = "rotate(" + slopeInDegrees + "deg)";
+        line.style.backgroundColor = color;
+        canvas.appendChild(line);
+    }
+}
+
 eraser.addEventListener("click", () => {
     color = "white";
 })
+
+// draws the line
 line.addEventListener('click', () => {
-    sprayMe('no!');
-    canvas.addEventListener("click", (e) => {
-       
-        let myDot = {
-            x: e.offsetX,
-            y: e.offsetY
-        }
-        lineCoordinates.push(myDot);
-      
-        if(lineCoordinates.length === 2){
-        
-            let x1 = lineCoordinates[0].x;
-            let x2 = lineCoordinates[1].x;
-            let y1 = lineCoordinates[0].y;
-            let y2 = lineCoordinates[1].y;
-            drawLine(x1,y1,x2,y2);
-            lineCoordinates.length = [];
-        }
-        
-    })
+    lineActive = true;
+    if (lineActive) {
+        canvas.addEventListener("click", (e) => {
+            if (lineActive) {
+                let numX = e.clientX + e.movementX;
+                let numY = e.clientY + e.movementY;
+                let y = numY - canvas.offsetTop;
+                let x = numX - canvas.offsetLeft;
+                console.log(y, x)
+                let myDot = {
+                    x: x,
+                    y: y
+                }
+                lineCoordinates.push(myDot);
+                if (lineCoordinates.length === 2) {
+                    let x1 = lineCoordinates[0].x;
+                    let x2 = lineCoordinates[1].x;
+                    let y1 = lineCoordinates[0].y;
+                    let y2 = lineCoordinates[1].y;
+                    lineCoordinates = [];
+                    drawLine(x1, y1, x2, y2);
+                }
+            }
+        })
+    }
 });
 
+
 spray.addEventListener('click', () => {
-    console.log("ha")
-   sprayMe('mousemove');
+    sprayActive = true;
+    lineActive = false;
+    sprayMe('mousemove')
 })
 
 spraySingle.addEventListener('click', () => {
-
-   sprayMe('click');
+    sprayActive = true;
+    lineActive = false;
+    sprayMe('click');
 })
 
+// change the canvas size;
+document.querySelector(".btn-secondary").addEventListener("click", () => {
+    canvas.style.width = document.querySelector(".canvas-width").value + "px";
+    canvas.style.height = document.querySelector(".canvas-height").value + "px";
+    let parentHeight = parseInt(document.querySelector(".canvas-height").value) + 30;
+    let parentWidth = parseInt(document.querySelector(".canvas-width").value) + 30;
+    parent.style.width = parentWidth + "px";
+    parent.style.height = parentHeight + "px";
+
+})
+
+// cleares the bord
+
+document.querySelector(".btn-danger").addEventListener("click", () => {
+    while (canvas.firstChild) {
+        canvas.removeChild(canvas.firstChild);
+    }
+})
+
+//create the colors via JS.
 
 
+// rotate function
 
+let deg = 0;
+document.querySelector(".btn-info").addEventListener("click", () => {
+    deg += 90;
+    canvas.style.transform = `rotate(${deg}deg)`;
+    canvas.style.transition = `transform 350ms ease`;
+})
